@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ArticleRepository;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -25,6 +26,11 @@ class Article
     /**
      * @ORM\Column(type="string", length=255)
      */
+    private $alias;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
     private $subtitle;
 
     /**
@@ -33,7 +39,7 @@ class Article
     private $content;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=false)
      */
     private $createdAt;
 
@@ -45,12 +51,18 @@ class Article
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $deletedAt;
+    private $deleteAt;
 
     /**
      * @ORM\Column(type="string", length=150, nullable=true)
      */
     private $photo;
+
+    # Constructeur de la classe
+    public function __construct()
+    {
+        $this->setCreatedAt(new DateTime());
+    }
 
     public function getId(): ?int
     {
@@ -65,6 +77,18 @@ class Article
     public function setTitle(string $title): self
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getAlias(): ?string
+    {
+        return $this->alias;
+    }
+
+    public function setAlias(string $alias): self
+    {
+        $this->alias = $alias;
 
         return $this;
     }
@@ -98,7 +122,7 @@ class Article
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    public function setCreatedAt(?\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
 
@@ -117,14 +141,14 @@ class Article
         return $this;
     }
 
-    public function getDeletedAt(): ?\DateTimeInterface
+    public function getDeleteAt(): ?\DateTimeInterface
     {
-        return $this->deletedAt;
+        return $this->deleteAt;
     }
 
-    public function setDeletedAt(?\DateTimeInterface $deletedAt): self
+    public function setDeleteAt(?\DateTimeInterface $deleteAt): self
     {
-        $this->deletedAt = $deletedAt;
+        $this->deleteAt = $deleteAt;
 
         return $this;
     }
