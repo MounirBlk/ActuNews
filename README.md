@@ -1,1 +1,1 @@
-# discover-symfony
+# Symfony
