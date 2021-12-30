@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Entity\Category;
+use App\Entity\Commentary;
 use App\Form\ArticleType;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,8 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\File;
-
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 class ArticleController extends AbstractController
 {
 
@@ -141,15 +142,52 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @Route("/show/article/{id}", name="show_article", methods={"GET"})
+     * @Route("/show/article/{cat_alias}/{art_alias}", name="show_article", methods={"GET"})
+     * @ParamConverter("article", options={"mapping": {"art_alias" : "alias"}})
      * @param Article $article
      * @return Response
      */
-    public function showArticle(Article $article): Response
+    public function showArticle(Article $article, EntityManagerInterface $entityManager): Response
     {
+        $commentaries = $entityManager->getRepository(Commentary::class)->findBy([ 'article' => $article->getId() ]);
+
         return $this->render('article/show_article.html.twig', [
             'article' => $article,
+            'commentaries' => $commentaries,
         ]);
+    }
+
+    /**
+     * @Route("/show/{alias}/articles/", name="show_article_from_category", methods={"GET"})
+     * @param Category $category
+     * @return Response
+     */
+    public function showArticleFromCategory(Category $category, EntityManagerInterface $entityManager): Response
+    {
+        $articles = $entityManager->getRepository(Article::class)->findBy([ 'category' => $category->getId() ]);
+
+        return $this->render('article/show_articles_from_category.html.twig', [
+            'category' => $category,
+            'articles' => $articles,
+        ]);
+    }
+
+    /**
+     * @Route("/admin/delete/article/{id}", name="soft_delete_article", methods={"GET"})
+     * @param Article $article
+     * @return Response
+     */
+    public function softDeleteArticle(Article $article, EntityManagerInterface $entityManager): Response
+    {
+        $article->setDeletedAt(new DateTime());
+
+        $entityManager->persist($article);
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Vous avez bien archivé l\'article !');
+
+        return $this->redirectToRoute('show_dashboard');
     }
 
 }
